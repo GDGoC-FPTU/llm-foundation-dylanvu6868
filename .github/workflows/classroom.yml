@@ -1,0 +1,70 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: 'Task 1: Call OpenAI'
+      id: task-1-call-openai
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Task 1: Call OpenAI'
+        setup-command: pip install -r requirements.txt
+        command: pytest tests/test_template.py -k "TestCallOpenAI" -v
+        timeout: 10
+        max-score: 20
+    - name: 'Task 2: Call Gemini'
+      id: task-2-call-gemini
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Task 2: Call Gemini'
+        setup-command: ''
+        command: pytest tests/test_template.py -k "TestCallGemini" -v
+        timeout: 10
+        max-score: 20
+    - name: 'Task 3: Call Anthropic'
+      id: task-3-call-anthropic
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Task 3: Call Anthropic'
+        setup-command: ''
+        command: pytest tests/test_template.py -k "TestCallAnthropic" -v
+        timeout: 10
+        max-score: 20
+    - name: 'Task 4: Compare Models'
+      id: task-4-compare-models
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Task 4: Compare Models'
+        setup-command: ''
+        command: pytest tests/test_template.py -k "TestCompareModels" -v
+        timeout: 10
+        max-score: 20
+    - name: 'Task 5: Streaming Chat'
+      id: task-5-streaming-chat
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Task 5: Streaming Chat'
+        setup-command: ''
+        command: pytest tests/test_template.py -k "TestCompareModels" -v
+        timeout: 10
+        max-score: 20
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TASK-1-CALL-OPENAI_RESULTS: "${{steps.task-1-call-openai.outputs.result}}"
+        TASK-2-CALL-GEMINI_RESULTS: "${{steps.task-2-call-gemini.outputs.result}}"
+        TASK-3-CALL-ANTHROPIC_RESULTS: "${{steps.task-3-call-anthropic.outputs.result}}"
+        TASK-4-COMPARE-MODELS_RESULTS: "${{steps.task-4-compare-models.outputs.result}}"
+        TASK-5-STREAMING-CHAT_RESULTS: "${{steps.task-5-streaming-chat.outputs.result}}"
+      with:
+        runners: task-1-call-openai,task-2-call-gemini,task-3-call-anthropic,task-4-compare-models,task-5-streaming-chat
